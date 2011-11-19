@@ -1,0 +1,16 @@
+#!/usr/local/bin/ruby -w
+
+require 'tranquality'
+require 'tranquality/option_parser'
+
+require 'flog'
+
+options = Tranquality::OptionParser.parse(ARGV)
+
+ARGV << "-" if ARGV.empty?
+
+flogger = Flog::Flogger.new(options)
+flogger.run(ARGV)
+flogger.report
+
+exit 0

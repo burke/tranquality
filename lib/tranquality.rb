@@ -1,0 +1,2 @@
+module Tranquality
+end
