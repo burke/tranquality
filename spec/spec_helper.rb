@@ -20,19 +20,3 @@ ensure
   $stderr = orig_stderr
 end
 
-def util_process sexp, score = -1, hash = {}
-  setup
-  @flog.process sexp
-
-  @klass ||= "main"
-  @meth  ||= "#none"
-
-  unless score != -1 && hash.empty? then
-    exp = {"#{@klass}#{@meth}" => hash}
-    assert_equal exp, @flog.calls
-  end
-
-  assert_in_delta score, @flog.total
-end
-
-

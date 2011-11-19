@@ -1,30 +1,26 @@
-#!/usr/bin/ruby -w
-
-require 'minitest/autorun'
 require 'flay'
 
-$: << "../../sexp_processor/dev/lib"
+describe Flay do
 
-class TestSexp < MiniTest::Unit::TestCase
-  def setup
+  before {
     # a(1) { |c| d }
     @s = s(:iter,
            s(:call, nil, :a, s(:arglist, s(:lit, 1))),
            s(:lasgn, :c),
            s(:call, nil, :d, s(:arglist)))
-  end
+  }
 
-  def test_structural_hash
+  it 'structural_hash' do
     hash = s(:iter,
              s(:call, s(:arglist, s(:lit))),
              s(:lasgn),
              s(:call, s(:arglist))).hash
 
-    assert_equal hash, @s.structural_hash
-    assert_equal hash, @s.deep_clone.structural_hash
+    @s.structural_hash.should == hash
+    @s.deep_clone.structural_hash.should == hash
   end
 
-  def test_all_structural_subhashes
+  it 'all_structural_hashes' do
     s = s(:iter,
           s(:call, s(:arglist, s(:lit))),
           s(:lasgn),
@@ -39,7 +35,7 @@ class TestSexp < MiniTest::Unit::TestCase
                 s[3][1]   .hash,
                ].sort
 
-    assert_equal expected, @s.all_structural_subhashes.sort.uniq
+    @s.all_structural_subhashes.sort.uniq.should == expected
 
     x = []
 
@@ -47,10 +43,10 @@ class TestSexp < MiniTest::Unit::TestCase
       x << o.structural_hash
     end
 
-    assert_equal expected, x.sort.uniq
+    x.sort.uniq.should == expected
   end
 
-  def test_process_sexp
+  it 'process_sexp' do
     flay = Flay.new
 
     s = Ruby19Parser.new.process <<-RUBY
@@ -71,10 +67,10 @@ class TestSexp < MiniTest::Unit::TestCase
 
     actual = flay.hashes.values.map { |sexps| sexps.map { |sexp| sexp.first } }
 
-    assert_equal expected, actual.sort_by { |a| a.first.to_s }
+    actual.sort_by { |a| a.first.to_s }.should == expected
   end
 
-  def test_process_sexp_full
+  it 'process_sexp_full' do
     flay = Flay.new(:mass => 1)
 
     s = Ruby19Parser.new.process <<-RUBY
@@ -100,14 +96,14 @@ class TestSexp < MiniTest::Unit::TestCase
 
     actual = flay.hashes.values.map { |sexps| sexps.map { |sexp| sexp.first } }
 
-    assert_equal expected, actual.sort_by { |a| a.inspect }
+    actual.sort_by { |a| a.inspect }.should == expected
   end
 
-  def test_process_sexp_no_structure
+  it 'process_sexp_no_structure' do
     flay = Flay.new(:mass => 1)
     flay.process_sexp s(:lit, 1)
 
-    assert flay.hashes.empty?
+    flay.hashes.should be_empty
   end
 
   def test_report
@@ -161,7 +157,7 @@ class TestSexp < MiniTest::Unit::TestCase
          end
     END
 
-    assert_equal '', err
-    assert_equal exp, out.gsub(/\d+/, "N")
+    err.should == ''
+    out.gsub(/\d+/, "N").should == exp
   end
 end
