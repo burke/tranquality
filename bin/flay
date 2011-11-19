@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby -w
+
+require 'flay'
+require 'flay/option_parser'
+
+flay = Flay.new(Flay::OptionParser.parse)
+
+ARGV << '.' if ARGV.empty?
+files = Flay.expand_dirs_to_files(*ARGV)
+
+flay.process(*files)
+flay.report
