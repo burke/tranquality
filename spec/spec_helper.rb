@@ -1,6 +1,8 @@
 lib = File.expand_path('../../lib', __FILE__)
 $:.unshift(lib) unless $:.include?(lib)
 
+require 'roodi'
+
 unless defined?(SexpProcessor)
   class SexpProcessor ; end
 end
