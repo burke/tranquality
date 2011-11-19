@@ -1,3 +1,3 @@
-module Flog
-  VERSION = '3.0.0.alpha1'
+module Tranquality
+  VERSION = '0.0.1'
 end

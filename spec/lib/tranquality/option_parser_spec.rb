@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'flog/option_parser'
+require 'tranquality/option_parser'
 
-describe Flog::OptionParser do
+describe Tranquality::OptionParser do
   it 'parses options' do
     # defaults
-    opts = Flog::OptionParser.parse
+    opts = Tranquality::OptionParser.parse
     opts[:quiet].should be_true
     opts[:continue].should be_false
 
@@ -28,7 +28,7 @@ describe Flog::OptionParser do
       "-v"             => :verbose,
       "--verbose"      => :verbose,
     }.each do |key, val|
-      Flog::OptionParser.parse(key)[val].should be_true
+      Tranquality::OptionParser.parse(key)[val].should be_true
     end
   end
 
@@ -37,17 +37,17 @@ describe Flog::OptionParser do
     after  { $:.replace @old_path }
 
     it 'recognizes the form with no interstitial space' do
-      Flog::OptionParser.parse("-Ia,b,c")
+      Tranquality::OptionParser.parse("-Ia,b,c")
       $:.should == @old_path + %w(a b c)
     end
 
     it 'recognizes the form with an interstitial space' do
-      Flog::OptionParser.parse(["-I", "d,e,f"])
+      Tranquality::OptionParser.parse(["-I", "d,e,f"])
       $:.should == @old_path + %w(d e f)
     end
 
     it 'recognizes a complex combination of include formats' do
-      Flog::OptionParser.parse(["-I", "g", "-Ih"])
+      Tranquality::OptionParser.parse(["-I", "g", "-Ih"])
       $:.should == @old_path + %w(g h)
     end
   end
@@ -57,14 +57,14 @@ describe Flog::OptionParser do
     let(:dummy_exception) { stub }
 
     before {
-      def Flog.exit
+      def Tranquality.exit
         raise dummy_exception
       end
     }
 
     it 'terminates execution after ____' do
       expect {
-        capture_io { Flog::OptionParser.parse "-h" }
+        capture_io { Tranquality::OptionParser.parse "-h" }
       }.to raise_error SystemExit
 
       #  assert_equal "happy", ex.message
