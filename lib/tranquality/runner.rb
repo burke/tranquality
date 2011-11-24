@@ -7,10 +7,6 @@ end
 module Tranquality
   class Runner
 
-    def initialize(options)
-      @options = options
-    end
-
     def run(*dirs)
       self.class.expand_dirs_to_files(*dirs).each do |file|
         ast = parse_file(file)

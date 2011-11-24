@@ -12,7 +12,7 @@ module Flog
     include Flog::Reporting
 
     attr_accessor :penalization_factor
-    attr_reader :calls, :options, :class_stack, :method_stack, :mass
+    attr_reader :calls, :class_stack, :method_stack, :mass
     attr_reader :method_locations
 
     def reset_score_data
@@ -21,9 +21,8 @@ module Flog
       @calls      = Hash.new { |h,k| h[k] = Hash.new 0 }
     end
 
-    def initialize(options = {})
+    def initialize
       super()
-      @options             = options
       @class_stack         = []
       @method_stack        = []
       @method_locations    = {}

@@ -30,7 +30,7 @@ describe Flog do
     flogger.calls.should == exp
 
     flogger.ensure_totals_calculated
-    flogger.options[:methods] or flogger.total_score.should == 1.6
+    flogger.total_score.should == 1.6
     flogger.mass["-"].should == 4 # HACK: 3 is for an unpublished sexp fmt
   end
 

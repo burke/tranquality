@@ -66,7 +66,6 @@ module Flog
       @totals = Hash.new(0)
 
       calls.each do |meth, tally|
-        next if options[:methods] and meth =~ /##{NO_METHOD}$/
         score = score_method(tally)
 
         @totals[meth] = score

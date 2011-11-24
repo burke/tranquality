@@ -22,10 +22,7 @@ class Flay
 
   def self.default_options
     {
-      :diff    => false,
-      :mass    => 16,
-      :summary => false,
-      :verbose => false,
+      :mass    => 16
     }
   end
 
@@ -40,8 +37,6 @@ class Flay
     @masses         = {}
     @total          = 0
     @mass_threshold = @option[:mass]
-
-    require 'ruby2ruby' if @option[:diff]
   end
 
   def process_ast(ast)
