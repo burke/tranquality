@@ -22,11 +22,9 @@ describe Flog do
   end
 
   def test_flog
-    old_stdin = $stdin
-    $stdin = StringIO.new "2 + 3"
-    $stdin.rewind
+    ast = Ruby19Parser.new.parse("2 + 3")
 
-    flogger.run "-"
+    flogger.accept(ast, "-")
 
     exp = { "main#none" => { :+ => 1.0, :lit_fixnum => 0.6 } }
     flogger.calls.should == exp
@@ -34,8 +32,6 @@ describe Flog do
     flogger.ensure_totals_calculated
     flogger.options[:methods] or flogger.total_score.should == 1.6
     flogger.mass["-"].should == 4 # HACK: 3 is for an unpublished sexp fmt
-  ensure
-    $stdin = old_stdin
   end
 
   it 'add_to_score' do
@@ -58,34 +54,6 @@ describe Flog do
     util_process sexp, 1.0, {:branch => 1.0}, false
 
     flogger.average_per_method.should == 1.0
-  end
-
-  xit 'cls_expand_dirs_to_files' do
-    expected = %w(lib/flogger.rb lib/flog_task.rb lib/gauntlet_flogger.rb)
-    flogger.expand_dirs_to_files('lib').should == expected
-    expected = %w(Rakefile)
-    flogger.expand_dirs_to_files('Rakefile').should == expected
-  end
-
-  context 'capturing stdin' do
-    before { @old_stdin = $stdin }
-    after  { $stdin = @old_stdin }
-  end
-
-  context 'capturing stdin' do
-    before { @old_stdin = $stdin }
-    after  { $stdin = @old_stdin }
-    it 'flog_erb' do
-      $stdin = StringIO.new "2 + <%= blah %>"
-      $stdin.rewind
-
-      o, e = capture_io do
-        flogger.run "-"
-      end
-
-      o.should == ""
-      e.should match(/Broken ERB/)
-    end
   end
 
   it 'in_class' do
@@ -515,33 +483,28 @@ describe Flog do
     o.string.should == expected
   end
 
-  context 'capturing stdin' do
-    before { @old_stdin = $stdin }
-    after  { $stdin = @old_stdin }
-    it 'report_all' do
-      $stdin = StringIO.new "2 + 3"
-      $stdin.rewind
+  it 'report_all' do
+    ast = Ruby19Parser.new.parse("2 + 3")
 
-      flogger.run "-"
-      flogger.ensure_totals_calculated
-      flogger.totals["main#something"] = 42.0
+    flogger.accept(ast, "-")
+    flogger.ensure_totals_calculated
+    flogger.totals["main#something"] = 42.0
 
-      exp = { "main#none" => { :+ => 1.0, :lit_fixnum => 0.6 } }
-      flogger.calls.should == exp
+    exp = { "main#none" => { :+ => 1.0, :lit_fixnum => 0.6 } }
+    flogger.calls.should == exp
 
-      flogger.options[:all] = true
+    flogger.options[:all] = true
 
-      flogger.options[:methods] or flogger.total_score.should == 1.6
-      flogger.mass["-"].should == 4 # HACK: 3 is for an unpublished sexp fmt
+    flogger.options[:methods] or flogger.total_score.should == 1.6
+    flogger.mass["-"].should == 4 # HACK: 3 is for an unpublished sexp fmt
 
-      o = StringIO.new
-      flogger.report o
+    o = StringIO.new
+    flogger.report o
 
-      expected = "     1.6: flog total\n     1.6: flog/method average\n\n     1.6: main#none\n"
+    expected = "     1.6: flog total\n     1.6: flog/method average\n\n     1.6: main#none\n"
 
-      o.string.should == expected
-      # FIX: add thresholded output
-    end
+    o.string.should == expected
+    # FIX: add thresholded output
   end
 
   it 'report_group' do
