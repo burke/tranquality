@@ -13,8 +13,4 @@ runner = Tranquality::Runner.new(options)
 runner.run(ARGV)
 runner.report
 
-# flogger = Flog::Flogger.new(options)
-# flogger.run(ARGV)
-# flogger.report
-
 exit 0
