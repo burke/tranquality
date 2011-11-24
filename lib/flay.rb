@@ -1,45 +1,28 @@
 require 'sexp_processor'
-
 require 'flay/reporter'
-
-class Sexp
-  def structural_hash
-    @structural_hash ||= self.structure.hash
-  end
-end
 
 class Flay
   include Flay::Reporter
 
   def visit(ast, file)
-    process_ast(ast)
+    process_sexp(ast) if ast
   end
 
   def self.default_options
-    {
-      :mass    => 16
-    }
+    {:mass => 16}
   end
 
   attr_accessor :mass_threshold, :total, :identical, :masses
-  attr_reader :hashes, :option
+  attr_reader :hashes, :options
 
-  def initialize(option = nil)
-    @option = option || Flay.default_options
+  def initialize(options = Flay.default_options)
     @hashes = Hash.new { |h,k| h[k] = [] }
 
+    @options        = options
     @identical      = {}
     @masses         = {}
     @total          = 0
-    @mass_threshold = @option[:mass]
-  end
-
-  def process_ast(ast)
-    begin
-      process_sexp(ast) if ast
-    rescue SyntaxError => e
-      warn "  skipping #{file}: #{e.message}"
-    end
+    @mass_threshold = @options[:mass]
   end
 
   def analyze

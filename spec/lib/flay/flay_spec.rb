@@ -1,4 +1,5 @@
 require 'flay'
+require 'tranquality/sexp_extensions'
 
 describe Flay do
 

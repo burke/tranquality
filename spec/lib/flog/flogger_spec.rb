@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'flog'
+require 'tranquality/sexp_extensions'
 
 describe Flog do
 
