@@ -2,10 +2,15 @@ require 'sexp_processor'
 require 'ruby_parser'
 
 require 'flay/reporter'
-require 'flay/sexp_extensions'
 
 class String
   attr_accessor :group
+end
+
+class Sexp
+  def structural_hash
+    @structural_hash ||= self.structure.hash
+  end
 end
 
 class Flay
@@ -49,28 +54,18 @@ class Flay
 
   def process(*files)
     files.each do |file|
-      process_file(file)
+      ast = Ruby19Parser.new.process(File.read(file), file)
+      process_ast(ast)
     end
     analyze
   end
 
-  def process_file(file)
-    warn "Processing #{file}" if option[:verbose]
-
+  def process_ast(ast)
     begin
-      sexp = parse_file(file)
-      process_sexp(sexp) if sexp
+      process_sexp(ast) if ast
     rescue SyntaxError => e
       warn "  skipping #{file}: #{e.message}"
     end
-  end
-
-  def parse_file(file)
-    Ruby19Parser.new.process(File.read(file), file)
-  rescue => e
-    warn "  #{e.message.strip}"
-    warn "  skipping #{file}"
-    nil
   end
 
   def analyze
@@ -84,8 +79,23 @@ class Flay
     end
   end
 
+  def all_structural_subhashes(node)
+    hashes = []
+    sexp_deep_each(node) do |n|
+      hashes << n.structural_hash
+    end
+    hashes
+  end
+
+  def sexp_deep_each(node, &block)
+    node.select { |s| s.kind_of?(Sexp) }.each do |sexp|
+      block[sexp]
+      sexp_deep_each(sexp, &block)
+    end
+  end
+
   def process_sexp(pt)
-    pt.deep_each do |node|
+    sexp_deep_each(pt) do |node|
       next unless node.any? { |sub| Sexp === sub }
       next if node.mass < self.mass_threshold
 
@@ -101,7 +111,7 @@ class Flay
     all_hashes = {}
     hashes.values.each do |nodes|
       nodes.each do |node|
-        node.all_structural_subhashes.each do |h|
+        all_structural_subhashes(node).each do |h|
           all_hashes[h] = true
         end
       end

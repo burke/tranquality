@@ -35,11 +35,11 @@ describe Flay do
                 s[3][1]   .hash,
                ].sort
 
-    @s.all_structural_subhashes.sort.uniq.should == expected
+    Flay.new.all_structural_subhashes(@s).sort.uniq.should == expected
 
     x = []
 
-    @s.deep_each do |o|
+    Flay.new.sexp_deep_each(@s) do |o|
       x << o.structural_hash
     end
 
