@@ -56,8 +56,4 @@ module Flog
   NO_CLASS = :main
   NO_METHOD = :none
 
-  OPTIONS = {
-    :extensions => ['rb']
-  }
-
 end

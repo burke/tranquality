@@ -29,18 +29,6 @@ class Flay
     }
   end
 
-  def self.expand_dirs_to_files(*dirs)
-    extensions = ['rb']
-
-    dirs.flatten.map { |p|
-      if File.directory? p then
-        Dir[File.join(p, '**', "*.{#{extensions.join(',')}}")]
-      else
-        p
-      end
-    }.flatten
-  end
-
   attr_accessor :mass_threshold, :total, :identical, :masses
   attr_reader :hashes, :option
 
@@ -54,14 +42,6 @@ class Flay
     @mass_threshold = @option[:mass]
 
     require 'ruby2ruby' if @option[:diff]
-  end
-
-  def process(*files)
-    files.each do |file|
-      ast = Ruby19Parser.new.process(File.read(file), file)
-      process_ast(ast)
-    end
-    analyze
   end
 
   def process_ast(ast)

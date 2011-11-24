@@ -1,6 +1,10 @@
 module Tranquality
   class Runner
 
+    def read_file(file)
+      file == '-' ? $stdin.read : File.read(file)
+    end
+
     def self.expand_dirs_to_files(*dirs)
       extensions = ['rb']
 
@@ -19,7 +23,7 @@ module Tranquality
 
     def run(*dirs)
       self.class.expand_dirs_to_files(*dirs).each do |file|
-        ast = Ruby19Parser.new.process(File.read(file), file)
+        ast = Ruby19Parser.new.process(read_file(file), file)
         do_stuff_with(ast, file)
       end
       do_stuff_at_end
