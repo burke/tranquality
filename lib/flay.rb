@@ -1,7 +1,3 @@
-#!/usr/bin/env ruby -w
-
-require 'optparse'
-require 'rubygems'
 require 'sexp_processor'
 require 'ruby_parser'
 
@@ -61,25 +57,16 @@ class Flay
   def process_file(file)
     warn "Processing #{file}" if option[:verbose]
 
-    ext = File.extname(file).sub(/^\./, '')
-    ext = "rb" if ext.nil? || ext.empty?
-    msg = "process_#{ext}"
-
-    unless respond_to? msg then
-      warn "  Unknown file type: #{ext}, defaulting to ruby"
-      msg = "process_rb"
-    end
-
     begin
-      sexp = parse_file(msg, file)
+      sexp = parse_file(file)
       process_sexp(sexp) if sexp
     rescue SyntaxError => e
       warn "  skipping #{file}: #{e.message}"
     end
   end
 
-  def parse_file(msg, file)
-    send(msg, file)
+  def parse_file(file)
+    Ruby19Parser.new.process(File.read(file), file)
   rescue => e
     warn "  #{e.message.strip}"
     warn "  skipping #{file}"
@@ -87,18 +74,14 @@ class Flay
   end
 
   def analyze
-    self.prune
+    prune
 
-    self.hashes.each do |hash,nodes|
+    hashes.each do |hash, nodes|
       identical[hash] = nodes[1..-1].all? { |n| n == nodes.first }
       masses[hash] = nodes.first.mass * nodes.size
       masses[hash] *= (nodes.size) if identical[hash]
       self.total += masses[hash]
     end
-  end
-
-  def process_rb(file)
-    Ruby19Parser.new.process(File.read(file), file)
   end
 
   def process_sexp(pt)
@@ -112,11 +95,11 @@ class Flay
 
   def prune
     # prune trees that aren't duped at all, or are too small
-    self.hashes.delete_if { |_,nodes| nodes.size == 1 }
+    hashes.delete_if { |_, nodes| nodes.size == 1 }
 
     # extract all subtree hashes from all nodes
     all_hashes = {}
-    self.hashes.values.each do |nodes|
+    hashes.values.each do |nodes|
       nodes.each do |node|
         node.all_structural_subhashes.each do |h|
           all_hashes[h] = true
