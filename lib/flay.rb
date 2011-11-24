@@ -33,21 +33,21 @@ class Flay
 
   private
 
-  def calculate_results
-    hashes.each do |hash, nodes|
-      identical[hash] = nodes[1..-1].all? { |n| n == nodes.first }
-      masses[hash] = nodes.first.mass * nodes.size
-      masses[hash] *= (nodes.size) if identical[hash]
-      self.total += masses[hash]
-    end
-  end
-
   def process_sexp(pt)
     pt.deep_each do |node|
       next unless node.any? { |sub| Sexp === sub }
       next if node.mass < self.mass_threshold
 
       self.hashes[node.structural_hash] << node
+    end
+  end
+
+  def calculate_results
+    hashes.each do |hash, nodes|
+      identical[hash] = nodes[1..-1].all? { |n| n == nodes.first }
+      masses[hash] = nodes.first.mass * nodes.size
+      masses[hash] *= (nodes.size) if identical[hash]
+      self.total += masses[hash]
     end
   end
 
