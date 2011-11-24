@@ -7,8 +7,16 @@ end
 module Tranquality
   class Runner
 
-    def read_file(file)
-      file == '-' ? $stdin.read : File.read(file)
+    def initialize(options)
+      @options = options
+    end
+
+    def run(*dirs)
+      self.class.expand_dirs_to_files(*dirs).each do |file|
+        ast = parse_file(file)
+        visit_all(ast, file)
+      end
+      analyze
     end
 
     def self.expand_dirs_to_files(*dirs)
@@ -23,22 +31,36 @@ module Tranquality
       }.flatten
     end
 
-    def initialize(options)
-      @options = options
+    def parser
+      if defined?(Ruby19Parser)
+        Ruby19Parser.new
+      else
+        RubyParser.new
+      end
     end
 
-    def run(*dirs)
-      self.class.expand_dirs_to_files(*dirs).each do |file|
-        ast = Ruby19Parser.new.process(read_file(file), file)
-        do_stuff_with(ast, file)
-      end
-      do_stuff_at_end
+    def parse_file(file)
+      parser.process(read_file(file), file)
+    end
+
+    def read_file(file)
+      file == '-' ? $stdin.read : File.read(file)
     end
 
     def report
       puts flog.report.inspect
       puts "="*100
       puts flay.report.inspect
+    end
+
+    def visit_all(ast, file)
+      visitors.each do |visitor|
+        ast.accept(visitor, file)
+      end
+    end
+
+    def visitors
+      [flay, flog]
     end
 
     def flog
@@ -49,12 +71,7 @@ module Tranquality
       @flay ||= Flay.new
     end
 
-    def do_stuff_with(ast, file)
-      ast.accept(flay, file)
-      ast.accept(flog, file)
-    end
-
-    def do_stuff_at_end
+    def analyze
       flay.analyze
     end
 
