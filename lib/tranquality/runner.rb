@@ -31,7 +31,7 @@ module Tranquality
 
     def report
       flay.report
-      flog.report
+      puts flog.report.inspect
     end
 
     def flog

@@ -110,75 +110,6 @@ describe Flog do
     flogger.method_name.should == "::whatevs"
   end
 
-  it 'output_details' do
-    flogger.options[:all] = true
-    test_flog
-
-    flogger.ensure_totals_calculated
-    flogger.totals["main#something"] = 42.0
-
-    o = StringIO.new
-    flogger.output_details o
-
-    expected = "\n     1.6: main#none\n"
-
-    o.string.should == expected
-    flogger.ensure_totals_calculated
-    flogger.totals["main#none"].should == 1.6
-  end
-
-  it 'output_details_grouped' do
-    test_flog
-
-    o = StringIO.new
-    flogger.output_details_grouped o
-
-    expected = "\n     1.6: main total\n     1.6: main#none\n"
-
-    o.string.should == expected
-  end
-
-  it 'output_details_methods' do
-    flogger.options[:methods] = true
-
-    test_flog
-
-    flogger.ensure_totals_calculated
-    flogger.totals["main#something"] = 42.0 # TODO: no sense... why no output?
-
-    o = StringIO.new
-    flogger.output_details o
-
-    flogger.ensure_totals_calculated
-    flogger.totals["main#none"].should == 0
-  end
-
-  it 'output_details_detailed' do
-    flogger.options[:details] = true
-
-    test_flog
-
-    flogger.ensure_totals_calculated
-    flogger.totals["main#something"] = 42.0
-
-    o = StringIO.new
-    flogger.output_details o, nil
-
-    expected = "\n     1.6: main#none
-     1.0:   +
-     0.6:   lit_fixnum
-
-"
-
-    o.string.should == expected
-    flogger.ensure_totals_calculated
-    flogger.totals["main#none"].should == 1.6
-  end
-
-  # it 'process_until_empty' do
-  #   flunk "no"
-  # end
-
   it 'penalize_by' do
     flogger.penalization_factor.should == 1
     flogger.penalize_by 2 do
@@ -471,59 +402,10 @@ describe Flog do
   it 'report' do
     test_flog
 
-    o = StringIO.new
-    flogger.report o
+    actual = flogger.report
+    expected = {:total_score=>1.6, :details=>[{:calls=>[[:+, 1.0], [:lit_fixnum, 0.6]], :location=>nil, :name=>"main#none", :score=>1.6}], :average_per_method=>1.6}
 
-    expected = "     1.6: flog total
-     1.6: flog/method average
-
-     1.6: main#none
-"
-
-    o.string.should == expected
-  end
-
-  it 'report_all' do
-    ast = Ruby19Parser.new.parse("2 + 3")
-
-    flogger.accept(ast, "-")
-    flogger.ensure_totals_calculated
-    flogger.totals["main#something"] = 42.0
-
-    exp = { "main#none" => { :+ => 1.0, :lit_fixnum => 0.6 } }
-    flogger.calls.should == exp
-
-    flogger.options[:all] = true
-
-    flogger.options[:methods] or flogger.total_score.should == 1.6
-    flogger.mass["-"].should == 4 # HACK: 3 is for an unpublished sexp fmt
-
-    o = StringIO.new
-    flogger.report o
-
-    expected = "     1.6: flog total\n     1.6: flog/method average\n\n     1.6: main#none\n"
-
-    o.string.should == expected
-    # FIX: add thresholded output
-  end
-
-  it 'report_group' do
-    # TODO: add second group to ensure proper output
-    flogger.options[:group] = true
-
-    test_flog
-
-    o = StringIO.new
-    flogger.report o
-
-    expected = "     1.6: flog total
-     1.6: flog/method average
-
-     1.6: main total
-     1.6: main#none
-"
-
-    o.string.should == expected
+    actual.should == expected
   end
 
   it 'score_method' do
