@@ -15,36 +15,16 @@ module Flog
     attr_reader :calls, :options, :class_stack, :method_stack, :mass
     attr_reader :method_locations
 
-    # Flog the given files or directories. Smart. Deals with "-", syntax
-    # errors, and traversing subdirectories intelligently.
     def run(*files_or_dirs)
-      files = self.class.expand_dirs_to_files(*files_or_dirs)
-
-      files.each do |file|
-        begin
-          # TODO: replace File.open to deal with "-"
-          ruby = file == '-' ? $stdin.read : File.read(file)
-          warn "** flogging #{file}" if options[:verbose]
-
-          ast = @parser.process(ruby, file)
-          next unless ast
-          mass[file] = ast.mass
-          process ast
-        rescue RegexpError, SyntaxError, Racc::ParseError => e
-          if e.inspect =~ /<%|%>/ or ruby =~ /<%|%>/ then
-            warn "#{e.inspect} at #{e.backtrace.first(5).join(', ')}"
-            warn "\n...stupid lemmings and their bad erb templates... skipping"
-          else
-            warn "ERROR: parsing ruby file #{file}"
-            unless options[:continue] then
-              warn "ERROR! Aborting. You may want to run with --continue."
-              raise e
-            end
-            warn "#{e.class}: #{e.message.strip} at:"
-            warn "  #{e.backtrace.first(5).join("\n  ")}"
-          end
-        end
+      self.class.expand_dirs_to_files(*files_or_dirs).each do |file|
+        run_file(file)
       end
+    end
+
+    def reset_score_data
+      @totals     = @total_score = nil
+      @penalization_factor = 1.0
+      @calls      = Hash.new { |h,k| h[k] = Hash.new 0 }
     end
 
     def initialize(options = {})
@@ -56,25 +36,59 @@ module Flog
       @mass                = {}
       @parser              = Ruby19Parser.new
       self.auto_shift_type = true
-      self.reset_score_data
+      reset_score_data
     end
 
-    def reset_score_data
-      @totals     = @total_score = nil
-      @penalization_factor = 1.0
-      @calls      = Hash.new { |h,k| h[k] = Hash.new 0 }
+    private
+
+    def run_file(file)
+      ruby = read_file(file)
+      warn "** flogging #{file}" if options[:verbose]
+
+      if ast = parse_file(ruby, file)
+        mass[file] = ast.mass
+        process(ast)
+      end
+    end
+
+    def parse_file(ruby, file)
+      @parser.process(ruby, file)
+    rescue RegexpError, SyntaxError, Racc::ParseError => e
+      handle_run_error(e, ruby)
+    end
+
+    def handle_run_error(e, ruby)
+      if e.inspect =~ /<%|%>/ or ruby =~ /<%|%>/ then
+        warn "#{e.inspect} at #{e.backtrace.first(5).join(', ')}"
+        warn "\nBroken ERB template. Skipping."
+      else
+        warn "ERROR: parsing ruby file #{file}"
+        unless options[:continue] then
+          warn "ERROR! Aborting. You may want to run with --continue."
+          raise e
+        end
+        warn "#{e.class}: #{e.message.strip} at:"
+        warn "  #{e.backtrace.first(5).join("\n  ")}"
+      end
+    end
+
+    def read_file(file)
+      file == '-' ? $stdin.read : File.read(file)
     end
 
     def self.expand_dirs_to_files(*dirs)
       extensions = OPTIONS[:extensions]
-
-      dirs.flatten.map { |p|
-        if File.directory? p then
-          Dir[File.join(p, '**', "*.{#{extensions.join(',')}}")]
+      dirs.flatten.map { |file_or_dir|
+        if File.directory?(file_or_dir)
+          files_in_directory_with_extensions(file_or_dir, extensions)
         else
-          p
+          file_or_dir
         end
       }.flatten.sort
+    end
+
+    def files_in_directory_with_extensions(dir, extensions)
+      Dir[File.join(dir, '**', "*.{#{extensions.join(',')}}")]
     end
 
   end

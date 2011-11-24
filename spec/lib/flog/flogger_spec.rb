@@ -84,7 +84,7 @@ describe Flog do
       end
 
       o.should == ""
-      e.should match(/stupid lemmings/)
+      e.should match(/Broken ERB/)
     end
   end
 
