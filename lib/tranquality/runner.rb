@@ -1,3 +1,6 @@
+require 'ruby_parser'
+require 'sexp_processor'
+
 class Sexp
   def accept(visitor, file = nil)
     visitor.visit(self, file)

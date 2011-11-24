@@ -1,11 +1,6 @@
 require 'sexp_processor'
-require 'ruby_parser'
 
 require 'flay/reporter'
-
-class String
-  attr_accessor :group
-end
 
 class Sexp
   def structural_hash

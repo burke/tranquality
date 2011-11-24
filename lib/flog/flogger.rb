@@ -1,5 +1,4 @@
 require 'sexp_processor'
-require 'ruby_parser'
 
 require 'flog/process_methods'
 require 'flog/process_method_helpers'
@@ -27,7 +26,6 @@ module Flog
       @method_stack        = []
       @method_locations    = {}
       @mass                = {}
-      @parser              = Ruby19Parser.new
       self.auto_shift_type = true
       reset_score_data
     end
