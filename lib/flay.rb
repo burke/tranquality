@@ -1,5 +1,6 @@
 require 'sexp_processor'
 require 'flay/reporter'
+require 'tranquality/sexp_extensions'
 
 class Flay
   include Flay::Reporter
@@ -36,23 +37,10 @@ class Flay
     end
   end
 
-  def all_structural_subhashes(node)
-    hashes = []
-    sexp_deep_each(node) do |n|
-      hashes << n.structural_hash
-    end
-    hashes
-  end
-
-  def sexp_deep_each(node, &block)
-    node.select { |s| s.kind_of?(Sexp) }.each do |sexp|
-      block[sexp]
-      sexp_deep_each(sexp, &block)
-    end
-  end
+  private
 
   def process_sexp(pt)
-    sexp_deep_each(pt) do |node|
+    pt.deep_each do |node|
       next unless node.any? { |sub| Sexp === sub }
       next if node.mass < self.mass_threshold
 
@@ -68,7 +56,7 @@ class Flay
     all_hashes = {}
     hashes.values.each do |nodes|
       nodes.each do |node|
-        all_structural_subhashes(node).each do |h|
+        node.all_structural_subhashes.each do |h|
           all_hashes[h] = true
         end
       end

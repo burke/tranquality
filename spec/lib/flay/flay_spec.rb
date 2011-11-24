@@ -36,18 +36,18 @@ describe Flay do
                 s[3][1]   .hash,
                ].sort
 
-    Flay.new.all_structural_subhashes(@s).sort.uniq.should == expected
+    @s.all_structural_subhashes.sort.uniq.should == expected
 
     x = []
 
-    Flay.new.sexp_deep_each(@s) do |o|
+    @s.deep_each do |o|
       x << o.structural_hash
     end
 
     x.sort.uniq.should == expected
   end
 
-  it 'process_sexp' do
+  it 'visit' do
     flay = Flay.new
 
     s = Ruby19Parser.new.process <<-RUBY
@@ -64,14 +64,14 @@ describe Flay do
                 # HACK [:defn],
                 [:scope]] # only ones big enough
 
-    flay.process_sexp s
+    flay.visit s, "-"
 
     actual = flay.hashes.values.map { |sexps| sexps.map { |sexp| sexp.first } }
 
     actual.sort_by { |a| a.first.to_s }.should == expected
   end
 
-  it 'process_sexp_full' do
+  it 'visit more complicated sexp' do
     flay = Flay.new(:mass => 1)
 
     s = Ruby19Parser.new.process <<-RUBY
@@ -93,7 +93,7 @@ describe Flay do
                 [:return],
                 [:scope]]
 
-    flay.process_sexp s
+    flay.visit s, '-'
 
     actual = flay.hashes.values.map { |sexps| sexps.map { |sexp| sexp.first } }
 
@@ -102,28 +102,27 @@ describe Flay do
 
   it 'process_sexp_no_structure' do
     flay = Flay.new(:mass => 1)
-    flay.process_sexp s(:lit, 1)
+    flay.visit s(:lit, 1), '-'
 
     flay.hashes.should be_empty
   end
 
-  def test_report
-    # make sure we run through options parser
-    $*.clear
-    $* << "-d"
-    $* << "--mass=1"
-    $* << "-v"
-
-    opts = nil
-    capture_io do # ignored
-      opts = Flay.parse_options
-    end
-
-    flay = Flay.new opts
+  it 'reports correctly' do
+    flay = Flay.new
 
     s = Ruby19Parser.new.process <<-RUBY
       class Dog
         def x
+          if $some_code == @other_code
+            do_thing_1 and return [1,3,4,6,7,8,3]
+          else
+            do_thing_2
+          end
+          if $some_code == @other_code
+            do_thing_1 and return [1,3,4,6,7,8,3]
+          else
+            do_thing_2
+          end
           return "Hello"
         end
       end
@@ -134,31 +133,9 @@ describe Flay do
       end
     RUBY
 
-    flay.process_sexp s
+    flay.visit s, "myfile"
     flay.analyze
 
-    out, err = capture_io do
-      flay.report nil
-    end
-
-    exp = <<-END.gsub(/\d+/, "N").gsub(/^ {6}/, "")
-      Total score (lower is better) = 16
-
-
-      1) Similar code found in :class (mass = 16)
-        A: (string):1
-        B: (string):6
-
-      A: class Dog
-      B: class Cat
-      A:   def x
-      B:   def y
-             return \"Hello\"
-           end
-         end
-    END
-
-    err.should == ''
-    out.gsub(/\d+/, "N").should == exp
+    flay.report.should == {:total_score=>76, :details=>[{:locations=>[["(string)", 3], ["(string)", 8]], :mass=>76, :similarity=>:identical, :bonus=>2}]}
   end
 end
