@@ -28,7 +28,12 @@ class Flay
 
   def analyze
     prune
+    calculate_results
+  end
 
+  private
+
+  def calculate_results
     hashes.each do |hash, nodes|
       identical[hash] = nodes[1..-1].all? { |n| n == nodes.first }
       masses[hash] = nodes.first.mass * nodes.size
@@ -36,8 +41,6 @@ class Flay
       self.total += masses[hash]
     end
   end
-
-  private
 
   def process_sexp(pt)
     pt.deep_each do |node|
@@ -49,21 +52,29 @@ class Flay
   end
 
   def prune
-    # prune trees that aren't duped at all, or are too small
-    hashes.delete_if { |_, nodes| nodes.size == 1 }
+    prune_trees_that_are_not_duped
+    prune_subtrees_of_duped_trees
+  end
 
-    # extract all subtree hashes from all nodes
-    all_hashes = {}
+  def prune_subtrees_of_duped_trees
+    duped_subtree_hashes = subtree_hashes_of_all_duped_nodes
+    hashes.delete_if { |h, _| duped_subtree_hashes[h] }
+  end
+
+  def prune_trees_that_are_not_duped
+    hashes.delete_if { |_, nodes| nodes.size == 1 }
+  end
+
+  def subtree_hashes_of_all_duped_nodes
+    subtree_hashes = {}
     hashes.values.each do |nodes|
       nodes.each do |node|
         node.all_structural_subhashes.each do |h|
-          all_hashes[h] = true
+          subtree_hashes[h] = true
         end
       end
     end
-
-    # nuke subtrees so we show the biggest matching tree possible
-    self.hashes.delete_if { |h,_| all_hashes[h] }
+    subtree_hashes
   end
 
 end
