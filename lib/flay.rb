@@ -16,6 +16,10 @@ end
 class Flay
   include Flay::Reporter
 
+  def accept(ast, file)
+    process_ast(ast)
+  end
+
   def self.default_options
     {
       :diff    => false,

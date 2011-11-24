@@ -39,6 +39,11 @@ module Flog
       reset_score_data
     end
 
+    def accept(ast, file)
+      mass[file] = ast.mass
+      process(ast)
+    end
+
     private
 
     def run_file(file)
