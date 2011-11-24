@@ -1,3 +1,9 @@
+class Sexp
+  def accept(visitor, file = nil)
+    visitor.visit(self, file)
+  end
+end
+
 module Tranquality
   class Runner
 
@@ -30,8 +36,9 @@ module Tranquality
     end
 
     def report
-      flay.report
       puts flog.report.inspect
+      puts "="*100
+      puts flay.report.inspect
     end
 
     def flog
@@ -43,8 +50,8 @@ module Tranquality
     end
 
     def do_stuff_with(ast, file)
-      flay.accept(ast, file)
-      flog.accept(ast, file)
+      ast.accept(flay, file)
+      ast.accept(flog, file)
     end
 
     def do_stuff_at_end

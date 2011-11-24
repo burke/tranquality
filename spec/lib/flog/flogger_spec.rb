@@ -24,7 +24,7 @@ describe Flog do
   def test_flog
     ast = Ruby19Parser.new.parse("2 + 3")
 
-    flogger.accept(ast, "-")
+    flogger.visit(ast, "-")
 
     exp = { "main#none" => { :+ => 1.0, :lit_fixnum => 0.6 } }
     flogger.calls.should == exp

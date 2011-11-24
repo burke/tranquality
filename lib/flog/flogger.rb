@@ -33,7 +33,7 @@ module Flog
       reset_score_data
     end
 
-    def accept(ast, file)
+    def visit(ast, file)
       mass[file] = ast.mass
       process(ast)
     end

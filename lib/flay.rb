@@ -16,7 +16,7 @@ end
 class Flay
   include Flay::Reporter
 
-  def accept(ast, file)
+  def visit(ast, file)
     process_ast(ast)
   end
 
