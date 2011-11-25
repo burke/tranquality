@@ -35,20 +35,6 @@ module Roodi
         check(filename, File.read(filename))
       end
 
-      def print(filename, content)
-        node = @parser.parse(content, filename)
-        puts "Line: #{node.line}"
-        pp node
-      end
-
-      def print_content(content)
-        print("dummy-file.rb", content)
-      end
-
-      def print_file(filename)
-        print(filename, File.read(filename))
-      end
-
       def errors
         @checks ||= []
         all_errors = @checks.collect {|check| check.errors}

@@ -4,10 +4,10 @@ describe Roodi::Checks::ClassNameCheck do
   before(:each) do
     @roodi = Roodi::Core::Runner.new(Roodi::Checks::ClassNameCheck.new)
   end
-  
+
   it "should accept camel case class names starting in capitals" do
     content = <<-END
-    class GoodClassName 
+    class GoodClassName
     end
     END
     @roodi.check_content(content)
@@ -16,19 +16,18 @@ describe Roodi::Checks::ClassNameCheck do
 
   it "should be able to parse scoped class names" do
     content = <<-END
-    class MyScope::GoodClassName 
+    class MyScope::GoodClassName
       def method
       end
     end
     END
-    # @roodi.print_content(content)
     @roodi.check_content(content)
     @roodi.errors.should be_empty
   end
 
   it "should reject class names with underscores" do
     content = <<-END
-    class Bad_ClassName 
+    class Bad_ClassName
     end
     END
     @roodi.check_content(content)
