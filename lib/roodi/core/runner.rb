@@ -1,9 +1,10 @@
-require 'pp'
 require 'yaml'
+require 'ruby_parser'
+require 'sexp_processor'
+require 'tranquality/sexp_extensions'
 
 require 'roodi/core/checking_visitor'
 require 'roodi/core/parser'
-require 'roodi/core/visitable_sexp'
 
 module Roodi
   module Core
@@ -56,8 +57,9 @@ module Roodi
         check_objects = []
         checks = YAML.load_file @config
         checks.each do |check|
+          opts = check[1] || {}
           klass = eval("Roodi::Checks::#{check[0]}")
-          check_objects << (check[1].empty? ? klass.new : klass.new(check[1]))
+          check_objects << (opts.empty? ? klass.new : klass.new(opts))
         end
         check_objects
       end

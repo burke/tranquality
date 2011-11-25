@@ -1,5 +1,5 @@
-require 'sexp_processor'
 require 'flay/reporter'
+require 'sexp_processor'
 require 'tranquality/sexp_extensions'
 
 class Flay
