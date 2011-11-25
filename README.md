@@ -12,9 +12,12 @@ codebases, and what comes out of the end result.
 * Flog
 * Flay
 
-## TODO (maybe)
+## In Progress
 
 * Roodi
+
+## TODO (maybe)
+
 * Reek
 * Churn (maybe -- this one's sort of out-of-band)
 * Saikuro (maybe -- is this still relevant?)
