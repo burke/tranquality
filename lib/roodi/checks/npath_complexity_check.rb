@@ -14,11 +14,11 @@ module Roodi
         @value_stack = []
         @current_value = 1
       end
-      
+
       def evalute_start_if(node)
         push_value
       end
-      
+
       def evalute_start_while(node)
         push_value
       end
@@ -38,7 +38,7 @@ module Roodi
       def evalute_start_rescue(node)
         push_value
       end
-      
+
       MULTIPLYING_NODE_TYPES.each do |type|
         define_method "evaluate_end_#{type}" do |node|
           leave_multiplying_conditional
@@ -50,9 +50,9 @@ module Roodi
           leave_multiplying_conditional
         end
       end
-      
+
       protected
-      
+
       def push_value
         @value_stack.push @current_value
         @current_value = 1
@@ -62,7 +62,7 @@ module Roodi
         pop = @value_stack.pop
         @current_value = (@current_value + 1) * pop
       end
-      
+
       def leave_adding_conditional
         pop = @value_stack.pop
         puts "#{type}, so adding #{pop}"

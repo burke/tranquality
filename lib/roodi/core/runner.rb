@@ -4,7 +4,7 @@ require 'sexp_processor'
 require 'tranquality/sexp_extensions'
 
 require 'roodi/core/checking_visitor'
-require 'roodi/core/parser'
+require 'tranquality/parser'
 
 module Roodi
   module Core
@@ -16,7 +16,7 @@ module Roodi
       def initialize(*checks)
         @config = DEFAULT_CONFIG
         @checks = checks unless checks.empty?
-        @parser = Parser.new
+        @parser = Tranquality::Parser.new
       end
 
       def check(filename, content)

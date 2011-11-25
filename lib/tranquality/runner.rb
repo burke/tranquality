@@ -1,6 +1,8 @@
 require 'ruby_parser'
 require 'sexp_processor'
 
+require 'tranquality/parser'
+
 module Tranquality
   class Runner
 
@@ -33,7 +35,7 @@ module Tranquality
     end
 
     def parse_file(file)
-      parser.process(read_file(file), file)
+      Tranquality::Parser.new.parse(read_file(file), file)
     end
 
     def read_file(file)

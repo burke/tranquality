@@ -16,7 +16,9 @@ module Roodi
 
       def evaluate_start(node)
         name = find_name(node)
-        add_error "#{@message_prefix} name \"#{name}\" should match pattern #{@pattern.inspect}" unless name.to_s =~ @pattern
+        unless name.to_s =~ @pattern
+          add_error "#{@message_prefix} name \"#{name}\" should match pattern #{@pattern.inspect}" 
+        end
       end
     end
   end

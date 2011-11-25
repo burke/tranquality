@@ -2,15 +2,15 @@ require 'roodi/checks/npath_complexity_check'
 
 module Roodi
   module Checks
-    # Checks Npath complexity of a method against a specified limit. 
+    # Checks Npath complexity of a method against a specified limit.
     class NpathComplexityMethodCheck < NpathComplexityCheck
       DEFAULT_COMPLEXITY = 8
-      
+
       def initialize(options = {})
         complexity = options['complexity'] || DEFAULT_COMPLEXITY
         super(complexity)
       end
-      
+
       def interesting_nodes
         [:defn] + COMPLEXITY_NODE_TYPES
       end
