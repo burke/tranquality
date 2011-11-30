@@ -6,10 +6,13 @@ require 'tranquality/parser'
 module Tranquality
   class Runner
 
+    def initialize
+      @parse_errors = {}
+    end
+
     def run(*dirs)
       self.class.expand_dirs_to_files(*dirs).each do |file|
-        ast = parse_file(file)
-        visit_all(ast, file)
+        process_file(file)
       end
       analyze
     end
@@ -34,6 +37,13 @@ module Tranquality
       end
     end
 
+    def process_file(file)
+      ast = parse_file(file)
+      visit_all(ast, file)
+    rescue Tranquality::Parser::ParseError => e
+      @parse_errors[file] = e
+    end
+
     def parse_file(file)
       Tranquality::Parser.new.parse(read_file(file), file)
     end
@@ -46,6 +56,8 @@ module Tranquality
       puts flog.report.inspect
       puts "="*100
       puts flay.report.inspect
+      puts "="*100
+      puts @parse_errors.inspect
     end
 
     def visit_all(ast, file)

@@ -2,6 +2,9 @@ require 'ruby_parser'
 
 module Tranquality
   class Parser
+
+    class ParseError < StandardError ; end
+
     def parse(content, filename)
       silence_stream(STDERR) do
         return silent_parse(content, filename)
@@ -30,6 +33,8 @@ module Tranquality
     def silent_parse(content, filename)
       @parser ||= parser_class.new
       @parser.parse(content, filename)
+    rescue
+      raise ParseError
     end
   end
 end
